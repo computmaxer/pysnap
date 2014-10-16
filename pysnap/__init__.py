@@ -139,7 +139,7 @@ class Snapchat(object):
         updates = self.get_updates(update_timestamp)
         # Filter out snaps containing c_id as these are sent snaps
         return [_map_keys(snap) for snap in updates['snaps']
-                if not 'c_id' in snap]
+                if 'c_id' not in snap]
 
     def get_friend_stories(self, update_timestamp=0):
         """Get stories
@@ -194,35 +194,6 @@ class Snapchat(object):
         if any((is_image(data), is_video(data), is_zip(data))):
             return data
         return None
-
-    def register(self, username, password, email, birthday):
-        """Register a new Snapchat account
-        Returns a dict contatining user information on success and False on
-        failure.
-
-        :param username: Username
-        :param password: Password
-        :param email: Email address
-        :param birthday: Birthday (yyyy-mm-dd)
-        """
-        r = self._request('register', {
-            'birthday': birthday,
-            'password': password,
-            'email': email
-        })
-        if not 'token' in r.json():
-            return False
-
-        r = self._request('registeru', {
-            'email': email,
-            'username': username
-        })
-        result = r.json()
-        if 'auth_token' in result:
-            self.auth_token = result['auth_token']
-        if 'username' in result:
-            self.username = result['username']
-        return result
 
     def send_events(self, events, data=None):
         """Send event data
@@ -357,7 +328,7 @@ class Snapchat(object):
         if not os.path.exists(path):
             raise ValueError('No such file: {0}'.format(path))
 
-        with open(path) as f:
+        with open(path, 'rb') as f:
             data = f.read()
 
         media_type = get_media_type(data)
